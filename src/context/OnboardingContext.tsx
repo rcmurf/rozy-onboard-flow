@@ -1,6 +1,5 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ChatMessage, FormField, FormState, OnboardingSection, OnboardingSubsection } from '@/types/onboarding';
+import { ChatMessage, FormField, FormState, OnboardingSection, OnboardingSubsection, BrandType } from '@/types/onboarding';
 import { v4 as uuidv4 } from 'uuid';
 
 interface OnboardingContextType {
@@ -10,6 +9,7 @@ interface OnboardingContextType {
   currentSectionId: string;
   currentSubsectionId: string;
   isTyping: boolean;
+  brandType: BrandType;
   addUserMessage: (content: string) => void;
   addAssistantMessage: (content: string, formField?: FormField) => void;
   updateFormState: (fieldId: string, value: any) => void;
@@ -18,23 +18,39 @@ interface OnboardingContextType {
   completeCurrentSection: () => void;
   submitFormField: (fieldId: string, value: any) => Promise<void>;
   setIsTyping: (isTyping: boolean) => void;
+  setBrandType: (type: BrandType) => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export const initialSections: OnboardingSection[] = [
   {
+    id: 'brand-type',
+    title: 'Brand Type',
+    description: 'Select your brand type',
+    isCompleted: false,
+    isCurrent: true,
+    subsections: [
+      {
+        id: 'brand-selection',
+        title: 'Brand Selection',
+        isCompleted: false,
+        isCurrent: true,
+      }
+    ]
+  },
+  {
     id: 'personal-info',
     title: 'Personal Information',
     description: 'Basic details about you',
     isCompleted: false,
-    isCurrent: true,
+    isCurrent: false,
     subsections: [
       {
         id: 'name-email',
         title: 'Name & Contact',
         isCompleted: false,
-        isCurrent: true,
+        isCurrent: false,
       },
       {
         id: 'background',
@@ -113,16 +129,19 @@ const initialMessages: ChatMessage[] = [
   {
     id: uuidv4(),
     role: 'assistant',
-    content: 'Hi there! I\'m Rozy, your onboarding assistant. I\'ll help you set up your profile. Let\'s start with your name. What should I call you?',
+    content: 'Hi there! I\'m Rozy, your onboarding assistant at A.Rose Media. Before we get started, I need to know which type of brand you\'re onboarding. Are you a business brand or a personal brand?',
     timestamp: new Date(),
     formField: {
-      type: 'text',
-      id: 'name',
-      label: 'Your Name',
-      placeholder: 'Enter your full name',
+      type: 'radio',
+      id: 'brand-type',
+      label: 'Select your brand type',
       required: true,
-      sectionId: 'personal-info',
-      subsectionId: 'name-email'
+      options: [
+        { value: 'business', label: 'Business Brand' },
+        { value: 'personal', label: 'Personal Brand' }
+      ],
+      sectionId: 'brand-type',
+      subsectionId: 'brand-selection'
     }
   }
 ];
@@ -131,9 +150,10 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [sections, setSections] = useState<OnboardingSection[]>(initialSections);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [formState, setFormState] = useState<FormState>({});
-  const [currentSectionId, setCurrentSectionId] = useState('personal-info');
-  const [currentSubsectionId, setCurrentSubsectionId] = useState('name-email');
+  const [currentSectionId, setCurrentSectionId] = useState('brand-type');
+  const [currentSubsectionId, setCurrentSubsectionId] = useState('brand-selection');
   const [isTyping, setIsTyping] = useState(false);
+  const [brandType, setBrandType] = useState<BrandType>(null);
 
   const addUserMessage = (content: string) => {
     setMessages(prev => [
@@ -272,8 +292,48 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         const currentSectionIndex = sections.findIndex(s => s.id === currentSectionId);
         const currentSection = sections[currentSectionIndex];
         
-        if (fieldId === 'name') {
-          responseText = `Great to meet you, ${value}! Now, could you please share your email address?`;
+        if (fieldId === 'brand-type') {
+          // Set the brand type
+          setBrandType(value as BrandType);
+          
+          if (value === 'business') {
+            responseText = 'Great! I\'ll be helping you onboard your business brand with A.Rose Media. Let\'s start with your business name. What is the name of your company?';
+            nextField = {
+              type: 'text',
+              id: 'business-name',
+              label: 'Business Name',
+              placeholder: 'Enter your business name',
+              required: true,
+              sectionId: 'personal-info',
+              subsectionId: 'name-email'
+            };
+          } else {
+            responseText = 'Perfect! I\'ll be helping you onboard your personal brand with A.Rose Media. Let\'s start with your name. What should I call you?';
+            nextField = {
+              type: 'text',
+              id: 'name',
+              label: 'Your Name',
+              placeholder: 'Enter your full name',
+              required: true,
+              sectionId: 'personal-info',
+              subsectionId: 'name-email'
+            };
+          }
+          completeCurrentSection();
+        } else if (fieldId === 'business-name') {
+          responseText = `Thank you for sharing your business name, ${value}! Now, could you please provide your name as the primary contact?`;
+          nextField = {
+            type: 'text',
+            id: 'contact-name',
+            label: 'Contact Name',
+            placeholder: 'Enter your full name',
+            required: true,
+            sectionId: 'personal-info',
+            subsectionId: 'name-email'
+          };
+        } else if (fieldId === 'contact-name' || fieldId === 'name') {
+          const nameType = fieldId === 'contact-name' ? 'contact name' : 'name';
+          responseText = `Great to meet you! Now, could you please share your business email address?`;
           nextField = {
             type: 'text',
             id: 'email',
@@ -284,56 +344,65 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
             subsectionId: 'name-email'
           };
         } else if (fieldId === 'email') {
-          responseText = `Thanks for providing your email. Let's move on to your background. Could you tell me a bit about yourself?`;
+          const brandSpecificText = brandType === 'business' 
+            ? 'Tell me a bit about your business. What industry are you in, and what products or services do you offer?'
+            : 'Tell me a bit about yourself and your personal brand. What field are you in, and what are you known for?';
+          
+          responseText = `Thanks for providing your email. Let's move on to your background. ${brandSpecificText}`;
           nextField = {
             type: 'textarea',
             id: 'background',
-            label: 'About You',
-            placeholder: 'Share a bit about your background...',
+            label: 'About Your Brand',
+            placeholder: 'Share details about your brand...',
             required: true,
             sectionId: 'personal-info',
             subsectionId: 'background'
           };
-          // Complete the current subsection
           completeCurrentSection();
         } else if (fieldId === 'background') {
-          responseText = `Thanks for sharing! Now let's talk about your professional experience. What was your most recent role?`;
+          const brandSpecificText = brandType === 'business'
+            ? 'Now let\'s talk about your business experience. How long has your company been operating?'
+            : 'Now let\'s talk about your professional experience. What was your most recent role?';
+          
+          responseText = `Thanks for sharing! ${brandSpecificText}`;
+          const nextFieldId = brandType === 'business' ? 'company-age' : 'recent-role';
+          const nextFieldLabel = brandType === 'business' ? 'Company Age' : 'Most Recent Role';
+          const nextFieldPlaceholder = brandType === 'business' ? 'e.g. 5 years' : 'e.g. Senior Developer at ABC Corp';
+          
           nextField = {
             type: 'text',
-            id: 'recent-role',
-            label: 'Most Recent Role',
-            placeholder: 'e.g. Senior Developer at ABC Corp',
+            id: nextFieldId,
+            label: nextFieldLabel,
+            placeholder: nextFieldPlaceholder,
             required: true,
             sectionId: 'professional',
             subsectionId: 'work-experience'
           };
-          // Complete the current subsection
           completeCurrentSection();
-        } else if (fieldId === 'recent-role') {
-          responseText = `${value} sounds interesting! How many years of experience do you have in this field?`;
-          nextField = {
-            type: 'text',
-            id: 'years-experience',
-            label: 'Years of Experience',
-            placeholder: 'e.g. 5',
-            required: true,
-            sectionId: 'professional',
-            subsectionId: 'work-experience'
-          };
-        } else if (fieldId === 'years-experience') {
-          responseText = `Great! Now, what are your key skills and areas of expertise?`;
+        } else if (fieldId === 'company-age' || fieldId === 'recent-role') {
+          const brandSpecificText = brandType === 'business'
+            ? 'What are your company\'s key strengths or competitive advantages?'
+            : 'What are your key skills and areas of expertise?';
+          
+          responseText = `${value} is impressive! Now tell me, ${brandSpecificText}`;
+          const nextFieldId = brandType === 'business' ? 'company-strengths' : 'skills';
+          const nextFieldLabel = brandType === 'business' ? 'Company Strengths' : 'Skills & Expertise';
+          const nextFieldPlaceholder = brandType === 'business' 
+            ? 'List your company\'s key strengths or advantages'
+            : 'List your key skills and areas of expertise';
+          
           nextField = {
             type: 'textarea',
-            id: 'skills',
-            label: 'Skills & Expertise',
-            placeholder: 'List your key skills and areas of expertise',
+            id: nextFieldId,
+            label: nextFieldLabel,
+            placeholder: nextFieldPlaceholder,
             required: true,
             sectionId: 'professional',
             subsectionId: 'skills'
           };
           completeCurrentSection();
-        } else if (fieldId === 'skills') {
-          responseText = `Impressive skill set! Let's talk about your communication preferences. What's your preferred method of communication?`;
+        } else if (fieldId === 'company-strengths' || fieldId === 'skills') {
+          responseText = `Impressive ${brandType === 'business' ? 'strengths' : 'skill set'}! Let's talk about your communication preferences. What's your preferred method of communication?`;
           nextField = {
             type: 'select',
             id: 'communication-preference',
@@ -365,15 +434,25 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
           };
           completeCurrentSection();
         } else if (fieldId === 'other-preferences') {
-          responseText = `Thanks for sharing your preferences. Let's review everything before we finish. Here's a summary of your information:
-          
-Name: ${formState.name}
+          // Create a summary based on brand type
+          const summary = brandType === 'business'
+            ? `Business Name: ${formState['business-name']}
+Contact: ${formState['contact-name']}
+Email: ${formState.email}
+Background: ${formState.background}
+Company Age: ${formState['company-age']}
+Key Strengths: ${formState['company-strengths']}
+Preferred Communication: ${formState['communication-preference']}`
+            : `Name: ${formState.name}
 Email: ${formState.email}
 Background: ${formState.background}
 Recent Role: ${formState['recent-role']}
-Experience: ${formState['years-experience']} years
 Key Skills: ${formState.skills}
-Preferred Communication: ${formState['communication-preference']}
+Preferred Communication: ${formState['communication-preference']}`;
+          
+          responseText = `Thanks for sharing your preferences. Let's review everything before we finish. Here's a summary of your information:
+          
+${summary}
           
 Does everything look correct?`;
           nextField = {
@@ -385,7 +464,7 @@ Does everything look correct?`;
           };
           completeCurrentSection();
         } else if (fieldId === 'confirm') {
-          responseText = `Fantastic! Your onboarding is now complete. Thank you for taking the time to provide this information. Our team will reach out to you soon via your preferred method of communication.`;
+          responseText = `Fantastic! Your onboarding with A.Rose Media is now complete. Thank you for taking the time to provide this information. Our team will reach out to you soon via your preferred method of communication.`;
           completeCurrentSection();
         }
 
@@ -406,6 +485,7 @@ Does everything look correct?`;
     currentSectionId,
     currentSubsectionId,
     isTyping,
+    brandType,
     addUserMessage,
     addAssistantMessage,
     updateFormState,
@@ -413,7 +493,8 @@ Does everything look correct?`;
     goToSection,
     completeCurrentSection,
     submitFormField,
-    setIsTyping
+    setIsTyping,
+    setBrandType
   };
 
   return (

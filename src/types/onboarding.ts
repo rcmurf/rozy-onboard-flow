@@ -38,3 +38,5 @@ export interface FormField {
 export interface FormState {
   [key: string]: any;
 }
+
+export type BrandType = 'business' | 'personal' | null;

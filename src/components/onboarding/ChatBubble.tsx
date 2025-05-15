@@ -2,6 +2,7 @@
 import { ChatMessage } from '@/types/onboarding';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface ChatBubbleProps {
   message: ChatMessage;
@@ -12,6 +13,7 @@ interface ChatBubbleProps {
 const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) => {
   const [inputValue, setInputValue] = useState<string>('');
   const [selectValue, setSelectValue] = useState<string>('');
+  const [radioValue, setRadioValue] = useState<string>('');
   const [showInput, setShowInput] = useState(false);
   const { role, content, formField } = message;
   const isAssistant = role === 'assistant';
@@ -38,6 +40,9 @@ const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) =>
       case 'select':
         value = selectValue;
         break;
+      case 'radio':
+        value = radioValue;
+        break;
       case 'submit':
         value = 'confirmed';
         break;
@@ -49,6 +54,7 @@ const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) =>
       await onSubmit(formField.id, value);
       setInputValue('');
       setSelectValue('');
+      setRadioValue('');
     }
   };
 
@@ -137,15 +143,47 @@ const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) =>
                     ))}
                   </select>
                 )}
+
+                {formField.type === 'radio' && formField.options && (
+                  <RadioGroup
+                    value={radioValue}
+                    onValueChange={setRadioValue}
+                    className="flex flex-col space-y-2 mt-2"
+                  >
+                    {formField.options.map((option) => (
+                      <div key={option.value} className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value={option.value} 
+                          id={`${formField.id}-${option.value}`}
+                          disabled={disabled}
+                        />
+                        <label 
+                          htmlFor={`${formField.id}-${option.value}`}
+                          className="cursor-pointer text-sm"
+                        >
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
               </div>
               
               <button
                 type="submit"
-                disabled={disabled || (formField.type !== 'submit' && !inputValue && !selectValue)}
+                disabled={disabled || 
+                  (formField.type === 'radio' && !radioValue) ||
+                  (formField.type === 'select' && !selectValue) ||
+                  ((formField.type === 'text' || formField.type === 'textarea') && !inputValue && formField.type !== 'submit')
+                }
                 className={cn(
                   "px-4 py-2 text-sm font-medium text-white rounded-md",
                   "bg-rozy hover:bg-rozy-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rozy",
-                  (disabled || (formField.type !== 'submit' && !inputValue && !selectValue)) && "opacity-50 cursor-not-allowed"
+                  (disabled || 
+                    (formField.type === 'radio' && !radioValue) ||
+                    (formField.type === 'select' && !selectValue) ||
+                    ((formField.type === 'text' || formField.type === 'textarea') && !inputValue && formField.type !== 'submit')
+                  ) && "opacity-50 cursor-not-allowed"
                 )}
               >
                 {formField.type === 'submit' ? 'Submit' : 'Send'}
