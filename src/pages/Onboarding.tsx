@@ -1,16 +1,13 @@
 
-import { Helmet } from "react-helmet";
+import { useEffect } from "react";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
 
 const Onboarding = () => {
-  return (
-    <>
-      <Helmet>
-        <title>Onboarding | A.Rose Media</title>
-      </Helmet>
-      <OnboardingLayout />
-    </>
-  );
+  useEffect(() => {
+    document.title = "Onboarding | A.Rose Media";
+  }, []);
+
+  return <OnboardingLayout />;
 };
 
 export default Onboarding;
