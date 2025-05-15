@@ -40,6 +40,69 @@ export const initialSections: OnboardingSection[] = [
     ]
   },
   {
+    id: 'business-info',
+    title: 'Business Information',
+    description: 'Key details about your company',
+    isCompleted: false,
+    isCurrent: false,
+    subsections: [
+      {
+        id: 'company-basics',
+        title: 'Company Basics',
+        isCompleted: false,
+        isCurrent: false,
+      },
+      {
+        id: 'company-profile',
+        title: 'Company Profile',
+        isCompleted: false,
+        isCurrent: false,
+      }
+    ]
+  },
+  {
+    id: 'target-audience',
+    title: 'Target Audience',
+    description: 'Your ideal customers and market positioning',
+    isCompleted: false,
+    isCurrent: false,
+    subsections: [
+      {
+        id: 'customer-avatars',
+        title: 'Customer Avatars',
+        isCompleted: false,
+        isCurrent: false,
+      },
+      {
+        id: 'competitors',
+        title: 'Competitors',
+        isCompleted: false,
+        isCurrent: false,
+      }
+    ]
+  },
+  {
+    id: 'contacts',
+    title: 'Contact Information',
+    description: 'Key contacts for our engagement',
+    isCompleted: false,
+    isCurrent: false,
+    subsections: [
+      {
+        id: 'primary-contact',
+        title: 'Primary Contact',
+        isCompleted: false,
+        isCurrent: false,
+      },
+      {
+        id: 'additional-contacts',
+        title: 'Additional Contacts',
+        isCompleted: false,
+        isCurrent: false,
+      }
+    ]
+  },
+  {
     id: 'personal-info',
     title: 'Personal Information',
     description: 'Basic details about you',
@@ -55,48 +118,6 @@ export const initialSections: OnboardingSection[] = [
       {
         id: 'background',
         title: 'Background',
-        isCompleted: false,
-        isCurrent: false,
-      }
-    ]
-  },
-  {
-    id: 'professional',
-    title: 'Professional Details',
-    description: 'Your work experience and skills',
-    isCompleted: false,
-    isCurrent: false,
-    subsections: [
-      {
-        id: 'work-experience',
-        title: 'Work Experience',
-        isCompleted: false,
-        isCurrent: false,
-      },
-      {
-        id: 'skills',
-        title: 'Skills & Expertise',
-        isCompleted: false,
-        isCurrent: false,
-      }
-    ]
-  },
-  {
-    id: 'preferences',
-    title: 'Preferences',
-    description: 'Your preferences and requirements',
-    isCompleted: false,
-    isCurrent: false,
-    subsections: [
-      {
-        id: 'communication',
-        title: 'Communication',
-        isCompleted: false,
-        isCurrent: false,
-      },
-      {
-        id: 'other',
-        title: 'Other Preferences',
         isCompleted: false,
         isCurrent: false,
       }
@@ -129,7 +150,7 @@ const initialMessages: ChatMessage[] = [
   {
     id: uuidv4(),
     role: 'assistant',
-    content: 'Hi there! I\'m Rozy, your onboarding assistant at A.Rose Media. Before we get started, I need to know which type of brand you\'re onboarding. Are you a business brand or a personal brand?',
+    content: 'Hi there! I\'m Rozy, your onboarding assistant at A.Rose Media.\n\nWhat type of brand do you want to grow with us? Choose the option that best reflects your focus.',
     timestamp: new Date(),
     formField: {
       type: 'radio',
@@ -137,8 +158,8 @@ const initialMessages: ChatMessage[] = [
       label: 'Select your brand type',
       required: true,
       options: [
-        { value: 'business', label: 'Business Brand' },
-        { value: 'personal', label: 'Personal Brand' }
+        { value: 'business', label: 'Business Brand\nStrengthening your company\'s presence, awareness, and customer connection.' },
+        { value: 'personal', label: 'Personal Brand\nBuilding your influence, credibility, and thought leadership.' }
       ],
       sectionId: 'brand-type',
       subsectionId: 'brand-selection'
@@ -297,18 +318,18 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
           setBrandType(value as BrandType);
           
           if (value === 'business') {
-            responseText = 'Great! I\'ll be helping you onboard your business brand with A.Rose Media. Let\'s start with your business name. What is the name of your company?';
+            responseText = 'Let\'s Start with the Essentials\n\nSince your focus is on growing your business\'s audience, increasing brand awareness, and driving meaningful engagement, this section will gather key details about your company.\n\nLet\'s begin with some basic information about your business. What is your company name?';
             nextField = {
               type: 'text',
-              id: 'business-name',
-              label: 'Business Name',
-              placeholder: 'Enter your business name',
+              id: 'company-name',
+              label: 'Company Name',
+              placeholder: 'Enter your company name',
               required: true,
-              sectionId: 'personal-info',
-              subsectionId: 'name-email'
+              sectionId: 'business-info',
+              subsectionId: 'company-basics'
             };
           } else {
-            responseText = 'Perfect! I\'ll be helping you onboard your personal brand with A.Rose Media. Let\'s start with your name. What should I call you?';
+            responseText = 'Perfect! I\'ll be helping you onboard your personal brand with A.Rose Media. Let\'s start with your information. What should I call you?';
             nextField = {
               type: 'text',
               id: 'name',
@@ -320,137 +341,212 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
             };
           }
           completeCurrentSection();
-        } else if (fieldId === 'business-name') {
-          responseText = `Thank you for sharing your business name, ${value}! Now, could you please provide your name as the primary contact?`;
+        } else if (fieldId === 'company-name') {
+          responseText = `Great! ${value} it is. Now, what industry are you in?`;
+          nextField = {
+            type: 'text',
+            id: 'industry',
+            label: 'Industry',
+            placeholder: 'e.g., Technology, Healthcare, etc.',
+            required: true,
+            sectionId: 'business-info',
+            subsectionId: 'company-basics'
+          };
+        } else if (fieldId === 'industry') {
+          responseText = `${value} is a great industry! What is your company's website?`;
+          nextField = {
+            type: 'text',
+            id: 'website',
+            label: 'Website',
+            placeholder: 'e.g., https://example.com',
+            required: false,
+            sectionId: 'business-info',
+            subsectionId: 'company-basics'
+          };
+        } else if (fieldId === 'website') {
+          responseText = 'Thanks for that information! Now, let\'s talk about your company profile. Please provide an overview of your business.';
+          nextField = {
+            type: 'textarea',
+            id: 'company-overview',
+            label: 'Company Overview',
+            placeholder: 'Brief description of what your company does',
+            required: true,
+            sectionId: 'business-info',
+            subsectionId: 'company-profile'
+          };
+          completeCurrentSection();
+        } else if (fieldId === 'company-overview') {
+          responseText = 'Great overview! Now, could you tell me about your products and services?';
+          nextField = {
+            type: 'textarea',
+            id: 'products-services',
+            label: 'Products & Services',
+            placeholder: 'Describe your main offerings',
+            required: true,
+            sectionId: 'business-info',
+            subsectionId: 'company-profile'
+          };
+        } else if (fieldId === 'products-services') {
+          responseText = 'Thank you! Now, let\'s understand your mission statement. What drives your company?';
+          nextField = {
+            type: 'textarea',
+            id: 'mission-statement',
+            label: 'Mission Statement',
+            placeholder: 'Your company\'s purpose and goals',
+            required: true,
+            sectionId: 'business-info',
+            subsectionId: 'company-profile'
+          };
+        } else if (fieldId === 'mission-statement') {
+          responseText = 'Excellent! Let\'s move on to understanding your target audience. Could you describe your ideal customer?';
+          nextField = {
+            type: 'textarea',
+            id: 'target-audience',
+            label: 'Target Audience',
+            placeholder: 'Demographics, interests, behaviors of your ideal customers',
+            required: true,
+            sectionId: 'target-audience',
+            subsectionId: 'customer-avatars'
+          };
+          completeCurrentSection();
+        } else if (fieldId === 'target-audience') {
+          responseText = 'Great insights into your target audience! Now, let\'s talk about your competitors. Who are your main competitors?';
+          nextField = {
+            type: 'textarea',
+            id: 'competitors',
+            label: 'Main Competitors',
+            placeholder: 'List your main competitors and what makes you different',
+            required: true,
+            sectionId: 'target-audience',
+            subsectionId: 'competitors'
+          };
+          completeCurrentSection();
+        } else if (fieldId === 'competitors') {
+          responseText = 'Thanks for sharing about your competitive landscape! Now, let\'s capture information about who will be our main contact at your company. What\'s the name of the primary contact person?';
           nextField = {
             type: 'text',
             id: 'contact-name',
-            label: 'Contact Name',
-            placeholder: 'Enter your full name',
+            label: 'Primary Contact Name',
+            placeholder: 'Full name',
             required: true,
-            sectionId: 'personal-info',
-            subsectionId: 'name-email'
+            sectionId: 'contacts',
+            subsectionId: 'primary-contact'
           };
-        } else if (fieldId === 'contact-name' || fieldId === 'name') {
-          const nameType = fieldId === 'contact-name' ? 'contact name' : 'name';
-          responseText = `Great to meet you! Now, could you please share your business email address?`;
+          completeCurrentSection();
+        } else if (fieldId === 'contact-name') {
+          responseText = `Great! What is ${value}'s title or role at the company?`;
           nextField = {
             type: 'text',
-            id: 'email',
-            label: 'Email Address',
-            placeholder: 'your@email.com',
+            id: 'contact-title',
+            label: 'Title/Role',
+            placeholder: 'e.g., Marketing Director',
             required: true,
-            sectionId: 'personal-info',
-            subsectionId: 'name-email'
+            sectionId: 'contacts',
+            subsectionId: 'primary-contact'
           };
-        } else if (fieldId === 'email') {
-          const brandSpecificText = brandType === 'business' 
-            ? 'Tell me a bit about your business. What industry are you in, and what products or services do you offer?'
-            : 'Tell me a bit about yourself and your personal brand. What field are you in, and what are you known for?';
-          
-          responseText = `Thanks for providing your email. Let's move on to your background. ${brandSpecificText}`;
-          nextField = {
-            type: 'textarea',
-            id: 'background',
-            label: 'About Your Brand',
-            placeholder: 'Share details about your brand...',
-            required: true,
-            sectionId: 'personal-info',
-            subsectionId: 'background'
-          };
-          completeCurrentSection();
-        } else if (fieldId === 'background') {
-          const brandSpecificText = brandType === 'business'
-            ? 'Now let\'s talk about your business experience. How long has your company been operating?'
-            : 'Now let\'s talk about your professional experience. What was your most recent role?';
-          
-          responseText = `Thanks for sharing! ${brandSpecificText}`;
-          const nextFieldId = brandType === 'business' ? 'company-age' : 'recent-role';
-          const nextFieldLabel = brandType === 'business' ? 'Company Age' : 'Most Recent Role';
-          const nextFieldPlaceholder = brandType === 'business' ? 'e.g. 5 years' : 'e.g. Senior Developer at ABC Corp';
-          
+        } else if (fieldId === 'contact-title') {
+          responseText = 'And what is their email address?';
           nextField = {
             type: 'text',
-            id: nextFieldId,
-            label: nextFieldLabel,
-            placeholder: nextFieldPlaceholder,
+            id: 'contact-email',
+            label: 'Email',
+            placeholder: 'email@example.com',
             required: true,
-            sectionId: 'professional',
-            subsectionId: 'work-experience'
+            sectionId: 'contacts',
+            subsectionId: 'primary-contact'
           };
-          completeCurrentSection();
-        } else if (fieldId === 'company-age' || fieldId === 'recent-role') {
-          const brandSpecificText = brandType === 'business'
-            ? 'What are your company\'s key strengths or competitive advantages?'
-            : 'What are your key skills and areas of expertise?';
-          
-          responseText = `${value} is impressive! Now tell me, ${brandSpecificText}`;
-          const nextFieldId = brandType === 'business' ? 'company-strengths' : 'skills';
-          const nextFieldLabel = brandType === 'business' ? 'Company Strengths' : 'Skills & Expertise';
-          const nextFieldPlaceholder = brandType === 'business' 
-            ? 'List your company\'s key strengths or advantages'
-            : 'List your key skills and areas of expertise';
-          
+        } else if (fieldId === 'contact-email') {
+          responseText = 'Would you like to add any additional contacts from your company?';
           nextField = {
-            type: 'textarea',
-            id: nextFieldId,
-            label: nextFieldLabel,
-            placeholder: nextFieldPlaceholder,
+            type: 'radio',
+            id: 'add-contacts',
+            label: 'Add additional contacts?',
             required: true,
-            sectionId: 'professional',
-            subsectionId: 'skills'
-          };
-          completeCurrentSection();
-        } else if (fieldId === 'company-strengths' || fieldId === 'skills') {
-          responseText = `Impressive ${brandType === 'business' ? 'strengths' : 'skill set'}! Let's talk about your communication preferences. What's your preferred method of communication?`;
-          nextField = {
-            type: 'select',
-            id: 'communication-preference',
-            label: 'Preferred Communication',
             options: [
-              { value: 'email', label: 'Email' },
-              { value: 'phone', label: 'Phone' },
-              { value: 'video', label: 'Video Call' },
-              { value: 'chat', label: 'Chat' }
+              { value: 'yes', label: 'Yes' },
+              { value: 'no', label: 'No' }
             ],
-            required: true,
-            sectionId: 'preferences',
-            subsectionId: 'communication'
+            sectionId: 'contacts',
+            subsectionId: 'additional-contacts'
           };
           completeCurrentSection();
-        } else if (fieldId === 'communication-preference') {
-          responseText = `I've noted your preference for ${value === 'email' ? 'email communication' : 
-                         value === 'phone' ? 'phone calls' : 
-                         value === 'video' ? 'video calls' : 'chat'}. 
-                         Is there anything else you'd like me to know about your preferences?`;
+        } else if (fieldId === 'add-contacts') {
+          if (value === 'yes') {
+            responseText = 'Great! Please provide the name of the additional contact.';
+            nextField = {
+              type: 'text',
+              id: 'additional-contact-name',
+              label: 'Contact Name',
+              placeholder: 'Full name',
+              required: true,
+              sectionId: 'contacts',
+              subsectionId: 'additional-contacts'
+            };
+          } else {
+            // Create a summary based on business brand
+            const summary = `Company Name: ${formState['company-name']}
+Industry: ${formState.industry}
+Website: ${formState.website || 'Not provided'}
+Company Overview: ${formState['company-overview']}
+Products & Services: ${formState['products-services']}
+Mission Statement: ${formState['mission-statement']}
+Target Audience: ${formState['target-audience']}
+Competitors: ${formState.competitors}
+Primary Contact: ${formState['contact-name']} (${formState['contact-title']})
+Email: ${formState['contact-email']}`;
+            
+            responseText = `Thanks for providing all the information. Let's review everything before we finish. Here's a summary of your business information:
+            
+${summary}
+            
+Does everything look correct?`;
+            nextField = {
+              type: 'submit',
+              id: 'confirm',
+              label: 'Confirm & Submit',
+              sectionId: 'completion',
+              subsectionId: 'review'
+            };
+            completeCurrentSection();
+          }
+        } else if (fieldId === 'additional-contact-name') {
+          responseText = 'What is their email address?';
           nextField = {
-            type: 'textarea',
-            id: 'other-preferences',
-            label: 'Other Preferences',
-            placeholder: 'Any other preferences you want to share...',
-            required: false,
-            sectionId: 'preferences',
-            subsectionId: 'other'
+            type: 'text',
+            id: 'additional-contact-email',
+            label: 'Email',
+            placeholder: 'email@example.com',
+            required: true,
+            sectionId: 'contacts',
+            subsectionId: 'additional-contacts'
           };
-          completeCurrentSection();
-        } else if (fieldId === 'other-preferences') {
-          // Create a summary based on brand type
-          const summary = brandType === 'business'
-            ? `Business Name: ${formState['business-name']}
-Contact: ${formState['contact-name']}
-Email: ${formState.email}
-Background: ${formState.background}
-Company Age: ${formState['company-age']}
-Key Strengths: ${formState['company-strengths']}
-Preferred Communication: ${formState['communication-preference']}`
-            : `Name: ${formState.name}
-Email: ${formState.email}
-Background: ${formState.background}
-Recent Role: ${formState['recent-role']}
-Key Skills: ${formState.skills}
-Preferred Communication: ${formState['communication-preference']}`;
+        } else if (fieldId === 'additional-contact-email') {
+          responseText = 'What is their role in the company?';
+          nextField = {
+            type: 'text',
+            id: 'additional-contact-role',
+            label: 'Role',
+            placeholder: 'e.g., Creative Director',
+            required: true,
+            sectionId: 'contacts',
+            subsectionId: 'additional-contacts'
+          };
+        } else if (fieldId === 'additional-contact-role') {
+          // Create a summary based on business brand with additional contact
+          const summary = `Company Name: ${formState['company-name']}
+Industry: ${formState.industry}
+Website: ${formState.website || 'Not provided'}
+Company Overview: ${formState['company-overview']}
+Products & Services: ${formState['products-services']}
+Mission Statement: ${formState['mission-statement']}
+Target Audience: ${formState['target-audience']}
+Competitors: ${formState.competitors}
+Primary Contact: ${formState['contact-name']} (${formState['contact-title']})
+Email: ${formState['contact-email']}
+Additional Contact: ${formState['additional-contact-name']} (${formState['additional-contact-role']})
+Email: ${formState['additional-contact-email']}`;
           
-          responseText = `Thanks for sharing your preferences. Let's review everything before we finish. Here's a summary of your information:
+          responseText = `Thanks for providing all the information. Let's review everything before we finish. Here's a summary of your business information:
           
 ${summary}
           
@@ -463,9 +559,38 @@ Does everything look correct?`;
             subsectionId: 'review'
           };
           completeCurrentSection();
-        } else if (fieldId === 'confirm') {
-          responseText = `Fantastic! Your onboarding with A.Rose Media is now complete. Thank you for taking the time to provide this information. Our team will reach out to you soon via your preferred method of communication.`;
+        } else if (fieldId === 'name') {
+          // This is for personal brand
+          responseText = `Great to meet you, ${value}! What is your email address?`;
+          nextField = {
+            type: 'text',
+            id: 'email',
+            label: 'Email Address',
+            placeholder: 'your@email.com',
+            required: true,
+            sectionId: 'personal-info',
+            subsectionId: 'name-email'
+          };
+        } else if (fieldId === 'email') {
+          // Continue with personal brand flow
+          responseText = 'Thanks for providing your email. Tell me a bit about yourself and your personal brand. What field are you in, and what are you known for?';
+          nextField = {
+            type: 'textarea',
+            id: 'background',
+            label: 'About Your Brand',
+            placeholder: 'Share details about your personal brand...',
+            required: true,
+            sectionId: 'personal-info',
+            subsectionId: 'background'
+          };
           completeCurrentSection();
+        } else if (fieldId === 'confirm') {
+          responseText = `Fantastic! Your onboarding with A.Rose Media is now complete. Thank you for taking the time to provide this information. Our team will reach out to you soon to discuss next steps.`;
+          completeCurrentSection();
+        } else {
+          // Handle any other fields
+          responseText = `Thank you for providing that information. Let's continue with the next question.`;
+          // You can add more specific handling for other fields
         }
 
         addAssistantMessage(responseText, nextField);

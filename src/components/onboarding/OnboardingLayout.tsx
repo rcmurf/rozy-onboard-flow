@@ -31,13 +31,13 @@ const OnboardingLayout = () => {
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar */}
           {(showSidebar || !isMobile) && (
-            <div className={`${isMobile ? 'absolute z-10 w-full h-[calc(100%-4rem)] bg-white' : 'flex-shrink-0'}`}>
+            <div className={`${isMobile ? 'fixed inset-0 z-10 pt-16 pb-0' : 'flex-shrink-0 w-[280px]'}`}>
               <OnboardingProgress />
             </div>
           )}
 
           {/* Main content */}
-          <div className="flex-1 flex overflow-hidden">
+          <div className={`flex-1 flex overflow-hidden ${isMobile && showSidebar ? 'opacity-20' : ''}`}>
             <ChatContainer />
           </div>
         </div>

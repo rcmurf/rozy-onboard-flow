@@ -4,17 +4,25 @@ import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const OnboardingProgress = () => {
-  const { sections, goToSection } = useOnboarding();
+  const { sections, goToSection, brandType } = useOnboarding();
+
+  // Filter out sections based on brand type
+  const filteredSections = sections.filter(section => {
+    if (!brandType) return section.id === 'brand-type';
+    if (brandType === 'business') return section.id !== 'personal-info';
+    if (brandType === 'personal') return !['business-info', 'target-audience', 'contacts'].includes(section.id);
+    return true;
+  });
 
   return (
-    <div className="bg-gray-50 border-r border-gray-200 h-full flex flex-col p-5 min-w-[260px] overflow-auto">
+    <div className="bg-gray-50 border-r border-gray-200 h-full flex flex-col p-5 min-w-[280px] overflow-auto">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800">Onboarding Process</h2>
         <p className="text-sm text-gray-500">Complete all sections to finish</p>
       </div>
       
       <div className="space-y-6 flex-1">
-        {sections.map((section) => (
+        {filteredSections.map((section) => (
           <div key={section.id} className="space-y-2">
             <div className={cn(
               "flex items-center justify-between",

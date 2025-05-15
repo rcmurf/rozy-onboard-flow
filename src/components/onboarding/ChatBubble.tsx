@@ -148,20 +148,25 @@ const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) =>
                   <RadioGroup
                     value={radioValue}
                     onValueChange={setRadioValue}
-                    className="flex flex-col space-y-2 mt-2"
+                    className="flex flex-col space-y-3 mt-2"
                   >
                     {formField.options.map((option) => (
-                      <div key={option.value} className="flex items-center space-x-2">
+                      <div key={option.value} className="flex items-start space-x-2">
                         <RadioGroupItem 
                           value={option.value} 
                           id={`${formField.id}-${option.value}`}
                           disabled={disabled}
+                          className="mt-1"
                         />
                         <label 
                           htmlFor={`${formField.id}-${option.value}`}
                           className="cursor-pointer text-sm"
                         >
-                          {option.label}
+                          {option.label.split('\n').map((line, i) => (
+                            <p key={i} className={i === 0 ? "font-medium" : "text-xs text-gray-500 mt-1"}>
+                              {line}
+                            </p>
+                          ))}
                         </label>
                       </div>
                     ))}
