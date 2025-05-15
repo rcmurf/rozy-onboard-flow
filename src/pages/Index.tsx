@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,7 @@ type BrandSelectionForm = z.infer<typeof brandSelectionSchema>;
 
 const Index = () => {
   const [selectedBrand, setSelectedBrand] = useState<BrandType>(null);
+  const navigate = useNavigate();
 
   const form = useForm<BrandSelectionForm>({
     resolver: zodResolver(brandSelectionSchema),
@@ -26,6 +27,12 @@ const Index = () => {
 
   const onBrandChange = (value: BrandType) => {
     setSelectedBrand(value);
+  };
+
+  const handleStartOnboarding = () => {
+    if (selectedBrand) {
+      navigate(`/onboarding?brandType=${selectedBrand}`);
+    }
   };
 
   return (
@@ -83,17 +90,13 @@ const Index = () => {
           </div>
         </Form>
 
-        <Link 
-          to={selectedBrand ? `/onboarding?brandType=${selectedBrand}` : "#"}
-          onClick={(e) => !selectedBrand && e.preventDefault()}
+        <Button 
+          className={`bg-rozy hover:bg-rozy-dark text-white px-6 py-3 rounded-lg text-lg ${!selectedBrand ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={!selectedBrand}
+          onClick={handleStartOnboarding}
         >
-          <Button 
-            className={`bg-rozy hover:bg-rozy-dark text-white px-6 py-3 rounded-lg text-lg ${!selectedBrand ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!selectedBrand}
-          >
-            Start Onboarding
-          </Button>
-        </Link>
+          Start Onboarding
+        </Button>
         {!selectedBrand && (
           <p className="text-sm text-gray-500 mt-2">Please select a brand type to continue</p>
         )}

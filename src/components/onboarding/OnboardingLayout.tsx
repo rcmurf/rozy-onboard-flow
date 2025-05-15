@@ -3,10 +3,11 @@ import { OnboardingProvider } from '@/context/OnboardingContext';
 import OnboardingProgress from './OnboardingProgress';
 import ChatContainer from './ChatContainer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp } from 'lucide-react';
 import { BrandType } from '@/types/onboarding';
+import { useNavigate } from 'react-router-dom';
 
 interface OnboardingLayoutProps {
   initialBrandType?: BrandType;
@@ -15,6 +16,18 @@ interface OnboardingLayoutProps {
 const OnboardingLayout = ({ initialBrandType }: OnboardingLayoutProps) => {
   const isMobile = useIsMobile();
   const [showSidebar, setShowSidebar] = useState(!isMobile);
+  const navigate = useNavigate();
+
+  // Redirect back to home if no valid brand type
+  useEffect(() => {
+    if (!initialBrandType) {
+      navigate('/', { replace: true });
+    }
+  }, [initialBrandType, navigate]);
+
+  if (!initialBrandType) {
+    return null; // Don't render anything while redirecting
+  }
 
   return (
     <OnboardingProvider initialBrandType={initialBrandType}>
