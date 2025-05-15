@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ChatMessage, FormField, FormState, OnboardingSection, OnboardingSubsection, BrandType } from '@/types/onboarding';
 import { v4 as uuidv4 } from 'uuid';
@@ -148,8 +149,44 @@ export const initialSections: OnboardingSection[] = [
 
 // Create initial messages based on whether brandType is provided
 const createInitialMessages = (brandType: BrandType): ChatMessage[] => {
-  // If no brand type is provided, start with brand selection
-  if (!brandType) {
+  // If business brand is selected
+  if (brandType === 'business') {
+    return [{
+      id: uuidv4(),
+      role: 'assistant',
+      content: 'Welcome to A.Rose Media! I\'m Rozy, your onboarding assistant.\n\nSince your focus is on growing your business\'s audience, increasing brand awareness, and driving meaningful engagement, we\'ll gather key details about your company.\n\nLet\'s begin with some basic information. What is your company name?',
+      timestamp: new Date(),
+      formField: {
+        type: 'text',
+        id: 'company-name',
+        label: 'Company Name',
+        placeholder: 'Enter your company name',
+        required: true,
+        sectionId: 'business-info',
+        subsectionId: 'company-basics'
+      }
+    }];
+  } 
+  // If personal brand is selected
+  else if (brandType === 'personal') {
+    return [{
+      id: uuidv4(),
+      role: 'assistant',
+      content: 'Welcome to A.Rose Media! I\'m Rozy, your onboarding assistant.\n\nSince you\'re focusing on building your personal brand, I\'ll help you through the process. Let\'s start with your information.\n\nWhat should I call you?',
+      timestamp: new Date(),
+      formField: {
+        type: 'text',
+        id: 'name',
+        label: 'Your Name',
+        placeholder: 'Enter your full name',
+        required: true,
+        sectionId: 'personal-info',
+        subsectionId: 'name-email'
+      }
+    }];
+  } 
+  // Default case - no brand type selected yet
+  else {
     return [{
       id: uuidv4(),
       role: 'assistant',
@@ -168,40 +205,6 @@ const createInitialMessages = (brandType: BrandType): ChatMessage[] => {
         subsectionId: 'brand-selection'
       }
     }];
-  } else if (brandType === 'business') {
-    // If business brand is selected, start with company name
-    return [{
-      id: uuidv4(),
-      role: 'assistant',
-      content: 'Welcome to A.Rose Media! I\'m Rozy, your onboarding assistant.\n\nSince your focus is on growing your business\'s audience, increasing brand awareness, and driving meaningful engagement, we\'ll gather key details about your company.\n\nLet\'s begin with some basic information. What is your company name?',
-      timestamp: new Date(),
-      formField: {
-        type: 'text',
-        id: 'company-name',
-        label: 'Company Name',
-        placeholder: 'Enter your company name',
-        required: true,
-        sectionId: 'business-info',
-        subsectionId: 'company-basics'
-      }
-    }];
-  } else {
-    // If personal brand is selected, start with personal name
-    return [{
-      id: uuidv4(),
-      role: 'assistant',
-      content: 'Welcome to A.Rose Media! I\'m Rozy, your onboarding assistant.\n\nSince you\'re focusing on building your personal brand, I\'ll help you through the process. Let\'s start with your information.\n\nWhat should I call you?',
-      timestamp: new Date(),
-      formField: {
-        type: 'text',
-        id: 'name',
-        label: 'Your Name',
-        placeholder: 'Enter your full name',
-        required: true,
-        sectionId: 'personal-info',
-        subsectionId: 'name-email'
-      }
-    }];
   }
 };
 
@@ -211,64 +214,74 @@ interface OnboardingProviderProps {
 }
 
 export const OnboardingProvider = ({ children, initialBrandType }: OnboardingProviderProps) => {
-  const [sections, setSections] = useState<OnboardingSection[]>(initialSections);
+  // Initialize brand type from props directly
   const [brandType, setBrandType] = useState<BrandType>(initialBrandType || null);
+  
+  // Initialize sections with correct current section based on brand type
+  const [sections, setSections] = useState<OnboardingSection[]>(() => {
+    if (initialBrandType) {
+      return initialSections.map(section => {
+        if (section.id === 'brand-type') {
+          return {
+            ...section,
+            isCompleted: true,
+            isCurrent: false,
+            subsections: section.subsections.map(subsection => ({
+              ...subsection,
+              isCompleted: true,
+              isCurrent: false
+            }))
+          };
+        }
+        
+        if (
+          (initialBrandType === 'business' && section.id === 'business-info') ||
+          (initialBrandType === 'personal' && section.id === 'personal-info')
+        ) {
+          return {
+            ...section,
+            isCurrent: true,
+            subsections: section.subsections.map((subsection, index) => ({
+              ...subsection,
+              isCurrent: index === 0
+            }))
+          };
+        }
+        
+        return section;
+      });
+    }
+    return initialSections;
+  });
+  
+  // Initialize messages based on brand type
   const [messages, setMessages] = useState<ChatMessage[]>(() => createInitialMessages(initialBrandType || null));
-  const [formState, setFormState] = useState<FormState>({});
+  
+  // Initialize form state with brand type if provided
+  const [formState, setFormState] = useState<FormState>(() => {
+    if (initialBrandType) {
+      return { 'brand-type': initialBrandType };
+    }
+    return {};
+  });
+  
+  // Set the correct starting section based on brand type
   const [currentSectionId, setCurrentSectionId] = useState(
     initialBrandType === 'business' ? 'business-info' : 
     initialBrandType === 'personal' ? 'personal-info' : 
     'brand-type'
   );
+  
   const [currentSubsectionId, setCurrentSubsectionId] = useState(
     initialBrandType === 'business' ? 'company-basics' : 
     initialBrandType === 'personal' ? 'name-email' : 
     'brand-selection'
   );
+  
   const [isTyping, setIsTyping] = useState(false);
 
-  // If initialBrandType is provided, set it when component mounts and mark brand selection as completed
-  useEffect(() => {
-    if (initialBrandType) {
-      setBrandType(initialBrandType);
-      updateFormState('brand-type', initialBrandType);
-      
-      // Mark brand-type section as completed
-      setSections(prevSections => {
-        return prevSections.map(section => {
-          if (section.id === 'brand-type') {
-            return {
-              ...section,
-              isCompleted: true,
-              isCurrent: false,
-              subsections: section.subsections.map(subsection => ({
-                ...subsection,
-                isCompleted: true,
-                isCurrent: false
-              }))
-            };
-          }
-          
-          // Set the correct section as current
-          if (
-            (initialBrandType === 'business' && section.id === 'business-info') ||
-            (initialBrandType === 'personal' && section.id === 'personal-info')
-          ) {
-            return {
-              ...section,
-              isCurrent: true,
-              subsections: section.subsections.map((subsection, index) => ({
-                ...subsection,
-                isCurrent: index === 0
-              }))
-            };
-          }
-          
-          return section;
-        });
-      });
-    }
-  }, [initialBrandType]);
+  // We no longer need this effect since we're handling everything in the initial state
+  // This removes the possibility of a flash of the wrong content
 
   const addUserMessage = (content: string) => {
     setMessages(prev => [
