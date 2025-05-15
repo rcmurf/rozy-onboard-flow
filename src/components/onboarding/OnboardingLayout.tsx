@@ -18,26 +18,23 @@ const OnboardingLayout = ({ initialBrandType }: OnboardingLayoutProps) => {
   const [showSidebar, setShowSidebar] = useState(!isMobile);
   const navigate = useNavigate();
 
-  // Redirect back to home if no valid brand type, but wait until we know it's loaded
+  // Redirect back to home if no valid brand type, but check localStorage first
   useEffect(() => {
-    if (initialBrandType === undefined) return; // Still loading, don't redirect yet
-    if (!initialBrandType) {
+    const storedBrandType = localStorage.getItem('brandType') as BrandType;
+    const validBrandType = initialBrandType || storedBrandType;
+    
+    if (!validBrandType) {
       navigate('/', { replace: true });
     }
   }, [initialBrandType, navigate]);
 
   // Don't render anything if we're going to redirect
-  // But only after we're sure initialBrandType isn't undefined (still loading)
-  if (initialBrandType === undefined) {
-    return null; // Still loading
-  }
-  
-  if (!initialBrandType) {
+  if (!initialBrandType && !localStorage.getItem('brandType')) {
     return null; // Will redirect, don't render
   }
 
   return (
-    <OnboardingProvider initialBrandType={initialBrandType}>
+    <OnboardingProvider initialBrandType={initialBrandType || localStorage.getItem('brandType') as BrandType}>
       <div className="h-screen flex flex-col bg-gray-100">
         {/* Header with toggle on mobile */}
         {isMobile && (

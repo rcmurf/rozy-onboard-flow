@@ -11,9 +11,15 @@ const Onboarding = () => {
     document.title = "Onboarding | A.Rose Media";
   }, []);
 
-  // Get the brand type from URL params and ensure it's properly typed
+  // Try to get brand type from URL params first
   const brandTypeParam = searchParams.get("brandType") as BrandType;
-  const validBrandType = brandTypeParam === 'business' || brandTypeParam === 'personal' ? brandTypeParam : null;
+  // If not in URL params, try localStorage
+  const storedBrandType = localStorage.getItem('brandType') as BrandType;
+  
+  // Use URL param if available, otherwise use stored brand type
+  const validBrandType = 
+    (brandTypeParam === 'business' || brandTypeParam === 'personal') ? brandTypeParam : 
+    (storedBrandType === 'business' || storedBrandType === 'personal') ? storedBrandType : null;
   
   return <OnboardingLayout initialBrandType={validBrandType} />;
 };

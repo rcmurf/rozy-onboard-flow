@@ -31,8 +31,10 @@ const Index = () => {
 
   const handleStartOnboarding = () => {
     if (selectedBrand) {
-      // Use navigate instead of history.push
-      navigate(`/onboarding?brandType=${selectedBrand}`);
+      // Store the selected brand type in localStorage
+      localStorage.setItem('brandType', selectedBrand);
+      // Navigate to the onboarding page
+      navigate(`/onboarding`);
     }
   };
 
