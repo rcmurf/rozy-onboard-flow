@@ -146,26 +146,64 @@ export const initialSections: OnboardingSection[] = [
   }
 ];
 
-const initialMessages: ChatMessage[] = [
-  {
-    id: uuidv4(),
-    role: 'assistant',
-    content: 'Hi there! I\'m Rozy, your onboarding assistant at A.Rose Media.\n\nWhat type of brand do you want to grow with us? Choose the option that best reflects your focus.',
-    timestamp: new Date(),
-    formField: {
-      type: 'radio',
-      id: 'brand-type',
-      label: 'Select your brand type',
-      required: true,
-      options: [
-        { value: 'business', label: 'Business Brand\nStrengthening your company\'s presence, awareness, and customer connection.' },
-        { value: 'personal', label: 'Personal Brand\nBuilding your influence, credibility, and thought leadership.' }
-      ],
-      sectionId: 'brand-type',
-      subsectionId: 'brand-selection'
-    }
+// Create initial messages based on whether brandType is provided
+const createInitialMessages = (brandType: BrandType): ChatMessage[] => {
+  if (!brandType) {
+    // If no brand type is provided, start with brand selection
+    return [{
+      id: uuidv4(),
+      role: 'assistant',
+      content: 'Hi there! I\'m Rozy, your onboarding assistant at A.Rose Media.\n\nWhat type of brand do you want to grow with us? Choose the option that best reflects your focus.',
+      timestamp: new Date(),
+      formField: {
+        type: 'radio',
+        id: 'brand-type',
+        label: 'Select your brand type',
+        required: true,
+        options: [
+          { value: 'business', label: 'Business Brand\nStrengthening your company\'s presence, awareness, and customer connection.' },
+          { value: 'personal', label: 'Personal Brand\nBuilding your influence, credibility, and thought leadership.' }
+        ],
+        sectionId: 'brand-type',
+        subsectionId: 'brand-selection'
+      }
+    }];
+  } else if (brandType === 'business') {
+    // If business brand is selected, start with company name
+    return [{
+      id: uuidv4(),
+      role: 'assistant',
+      content: 'Welcome to A.Rose Media! I\'m Rozy, your onboarding assistant.\n\nSince your focus is on growing your business\'s audience, increasing brand awareness, and driving meaningful engagement, we\'ll gather key details about your company.\n\nLet\'s begin with some basic information. What is your company name?',
+      timestamp: new Date(),
+      formField: {
+        type: 'text',
+        id: 'company-name',
+        label: 'Company Name',
+        placeholder: 'Enter your company name',
+        required: true,
+        sectionId: 'business-info',
+        subsectionId: 'company-basics'
+      }
+    }];
+  } else {
+    // If personal brand is selected, start with personal name
+    return [{
+      id: uuidv4(),
+      role: 'assistant',
+      content: 'Welcome to A.Rose Media! I\'m Rozy, your onboarding assistant.\n\nSince you\'re focusing on building your personal brand, I\'ll help you through the process. Let\'s start with your information.\n\nWhat should I call you?',
+      timestamp: new Date(),
+      formField: {
+        type: 'text',
+        id: 'name',
+        label: 'Your Name',
+        placeholder: 'Enter your full name',
+        required: true,
+        sectionId: 'personal-info',
+        subsectionId: 'name-email'
+      }
+    }];
   }
-];
+};
 
 interface OnboardingProviderProps {
   children: ReactNode;
@@ -174,23 +212,61 @@ interface OnboardingProviderProps {
 
 export const OnboardingProvider = ({ children, initialBrandType }: OnboardingProviderProps) => {
   const [sections, setSections] = useState<OnboardingSection[]>(initialSections);
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [formState, setFormState] = useState<FormState>({});
-  const [currentSectionId, setCurrentSectionId] = useState('brand-type');
-  const [currentSubsectionId, setCurrentSubsectionId] = useState('brand-selection');
-  const [isTyping, setIsTyping] = useState(false);
   const [brandType, setBrandType] = useState<BrandType>(initialBrandType || null);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => createInitialMessages(initialBrandType || null));
+  const [formState, setFormState] = useState<FormState>({});
+  const [currentSectionId, setCurrentSectionId] = useState(
+    initialBrandType === 'business' ? 'business-info' : 
+    initialBrandType === 'personal' ? 'personal-info' : 
+    'brand-type'
+  );
+  const [currentSubsectionId, setCurrentSubsectionId] = useState(
+    initialBrandType === 'business' ? 'company-basics' : 
+    initialBrandType === 'personal' ? 'name-email' : 
+    'brand-selection'
+  );
+  const [isTyping, setIsTyping] = useState(false);
 
-  // If initialBrandType is provided, set it when component mounts
+  // If initialBrandType is provided, set it when component mounts and mark brand selection as completed
   useEffect(() => {
     if (initialBrandType) {
       setBrandType(initialBrandType);
-      // If brand is already selected, complete that section
-      if (currentSectionId === 'brand-type' && currentSubsectionId === 'brand-selection') {
-        // Update form state with the selected brand type
-        updateFormState('brand-type', initialBrandType);
-        completeCurrentSection();
-      }
+      updateFormState('brand-type', initialBrandType);
+      
+      // Mark brand-type section as completed
+      setSections(prevSections => {
+        return prevSections.map(section => {
+          if (section.id === 'brand-type') {
+            return {
+              ...section,
+              isCompleted: true,
+              isCurrent: false,
+              subsections: section.subsections.map(subsection => ({
+                ...subsection,
+                isCompleted: true,
+                isCurrent: false
+              }))
+            };
+          }
+          
+          // Set the correct section as current
+          if (
+            (initialBrandType === 'business' && section.id === 'business-info') ||
+            (initialBrandType === 'personal' && section.id === 'personal-info')
+          ) {
+            return {
+              ...section,
+              isCurrent: true,
+              subsections: section.subsections.map((subsection, index) => ({
+                ...subsection,
+                isCurrent: index === 0
+              }))
+            };
+          }
+          
+          return section;
+        });
+      });
     }
   }, [initialBrandType]);
 
