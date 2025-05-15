@@ -18,15 +18,22 @@ const OnboardingLayout = ({ initialBrandType }: OnboardingLayoutProps) => {
   const [showSidebar, setShowSidebar] = useState(!isMobile);
   const navigate = useNavigate();
 
-  // Redirect back to home if no valid brand type
+  // Redirect back to home if no valid brand type, but wait until we know it's loaded
   useEffect(() => {
+    if (initialBrandType === undefined) return; // Still loading, don't redirect yet
     if (!initialBrandType) {
       navigate('/', { replace: true });
     }
   }, [initialBrandType, navigate]);
 
+  // Don't render anything if we're going to redirect
+  // But only after we're sure initialBrandType isn't undefined (still loading)
+  if (initialBrandType === undefined) {
+    return null; // Still loading
+  }
+  
   if (!initialBrandType) {
-    return null; // Don't render anything while redirecting
+    return null; // Will redirect, don't render
   }
 
   return (
