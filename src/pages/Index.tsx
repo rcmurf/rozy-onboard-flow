@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +31,7 @@ const Index = () => {
 
   const handleStartOnboarding = () => {
     if (selectedBrand) {
+      // Use navigate instead of history.push
       navigate(`/onboarding?brandType=${selectedBrand}`);
     }
   };

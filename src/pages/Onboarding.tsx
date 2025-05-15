@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useSearchParams, Navigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
 import { BrandType } from "@/types/onboarding";
 
@@ -14,11 +14,6 @@ const Onboarding = () => {
   // Get the brand type from URL params and ensure it's properly typed
   const brandTypeParam = searchParams.get("brandType") as BrandType;
   const validBrandType = brandTypeParam === 'business' || brandTypeParam === 'personal' ? brandTypeParam : null;
-  
-  // Redirect to homepage if no valid brand type is found
-  if (!validBrandType) {
-    return <Navigate to="/" replace />;
-  }
   
   return <OnboardingLayout initialBrandType={validBrandType} />;
 };
