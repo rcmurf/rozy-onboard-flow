@@ -174,7 +174,8 @@ const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) =>
                 disabled={disabled || 
                   (formField.type === 'radio' && !radioValue) ||
                   (formField.type === 'select' && !selectValue) ||
-                  ((formField.type === 'text' || formField.type === 'textarea') && !inputValue && formField.type !== 'submit')
+                  (formField.type === 'text' && !inputValue) ||
+                  (formField.type === 'textarea' && !inputValue)
                 }
                 className={cn(
                   "px-4 py-2 text-sm font-medium text-white rounded-md",
@@ -182,7 +183,8 @@ const ChatBubble = ({ message, onSubmit, disabled = false }: ChatBubbleProps) =>
                   (disabled || 
                     (formField.type === 'radio' && !radioValue) ||
                     (formField.type === 'select' && !selectValue) ||
-                    ((formField.type === 'text' || formField.type === 'textarea') && !inputValue && formField.type !== 'submit')
+                    (formField.type === 'text' && !inputValue) ||
+                    (formField.type === 'textarea' && !inputValue)
                   ) && "opacity-50 cursor-not-allowed"
                 )}
               >
