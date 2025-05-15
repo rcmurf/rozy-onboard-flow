@@ -148,8 +148,8 @@ export const initialSections: OnboardingSection[] = [
 
 // Create initial messages based on whether brandType is provided
 const createInitialMessages = (brandType: BrandType): ChatMessage[] => {
+  // If no brand type is provided, start with brand selection
   if (!brandType) {
-    // If no brand type is provided, start with brand selection
     return [{
       id: uuidv4(),
       role: 'assistant',

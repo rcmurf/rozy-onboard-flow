@@ -3,7 +3,7 @@ import { OnboardingProvider } from '@/context/OnboardingContext';
 import OnboardingProgress from './OnboardingProgress';
 import ChatContainer from './ChatContainer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp } from 'lucide-react';
 import { BrandType } from '@/types/onboarding';
