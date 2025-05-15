@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ChatMessage, FormField, FormState, OnboardingSection, OnboardingSubsection, BrandType } from '@/types/onboarding';
 import { v4 as uuidv4 } from 'uuid';
@@ -147,7 +146,7 @@ export const initialSections: OnboardingSection[] = [
   }
 ];
 
-// Create initial messages based on whether brandType is provided
+// Create initial messages based on brandType
 const createInitialMessages = (brandType: BrandType): ChatMessage[] => {
   // If business brand is selected
   if (brandType === 'business') {
@@ -185,25 +184,13 @@ const createInitialMessages = (brandType: BrandType): ChatMessage[] => {
       }
     }];
   } 
-  // Default case - no brand type selected yet
+  // Fallback case - provide an error message
   else {
     return [{
       id: uuidv4(),
       role: 'assistant',
-      content: 'Hi there! I\'m Rozy, your onboarding assistant at A.Rose Media.\n\nWhat type of brand do you want to grow with us? Choose the option that best reflects your focus.',
-      timestamp: new Date(),
-      formField: {
-        type: 'radio',
-        id: 'brand-type',
-        label: 'Select your brand type',
-        required: true,
-        options: [
-          { value: 'business', label: 'Business Brand\nStrengthening your company\'s presence, awareness, and customer connection.' },
-          { value: 'personal', label: 'Personal Brand\nBuilding your influence, credibility, and thought leadership.' }
-        ],
-        sectionId: 'brand-type',
-        subsectionId: 'brand-selection'
-      }
+      content: 'It looks like you\'ve reached this page without selecting a brand type. Please go back to the homepage and select either a Business or Personal brand to continue.',
+      timestamp: new Date()
     }];
   }
 };
