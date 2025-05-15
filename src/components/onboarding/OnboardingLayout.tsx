@@ -3,16 +3,21 @@ import { OnboardingProvider } from '@/context/OnboardingContext';
 import OnboardingProgress from './OnboardingProgress';
 import ChatContainer from './ChatContainer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp } from 'lucide-react';
+import { BrandType } from '@/types/onboarding';
 
-const OnboardingLayout = () => {
+interface OnboardingLayoutProps {
+  initialBrandType?: BrandType;
+}
+
+const OnboardingLayout = ({ initialBrandType }: OnboardingLayoutProps) => {
   const isMobile = useIsMobile();
   const [showSidebar, setShowSidebar] = useState(!isMobile);
 
   return (
-    <OnboardingProvider>
+    <OnboardingProvider initialBrandType={initialBrandType}>
       <div className="h-screen flex flex-col bg-gray-100">
         {/* Header with toggle on mobile */}
         {isMobile && (

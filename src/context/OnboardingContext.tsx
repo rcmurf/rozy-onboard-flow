@@ -167,14 +167,32 @@ const initialMessages: ChatMessage[] = [
   }
 ];
 
-export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
+interface OnboardingProviderProps {
+  children: ReactNode;
+  initialBrandType?: BrandType;
+}
+
+export const OnboardingProvider = ({ children, initialBrandType }: OnboardingProviderProps) => {
   const [sections, setSections] = useState<OnboardingSection[]>(initialSections);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [formState, setFormState] = useState<FormState>({});
   const [currentSectionId, setCurrentSectionId] = useState('brand-type');
   const [currentSubsectionId, setCurrentSubsectionId] = useState('brand-selection');
   const [isTyping, setIsTyping] = useState(false);
-  const [brandType, setBrandType] = useState<BrandType>(null);
+  const [brandType, setBrandType] = useState<BrandType>(initialBrandType || null);
+
+  // If initialBrandType is provided, set it when component mounts
+  useEffect(() => {
+    if (initialBrandType) {
+      setBrandType(initialBrandType);
+      // If brand is already selected, complete that section
+      if (currentSectionId === 'brand-type' && currentSubsectionId === 'brand-selection') {
+        // Update form state with the selected brand type
+        updateFormState('brand-type', initialBrandType);
+        completeCurrentSection();
+      }
+    }
+  }, [initialBrandType]);
 
   const addUserMessage = (content: string) => {
     setMessages(prev => [
